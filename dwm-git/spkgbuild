@@ -1,0 +1,33 @@
+# description	: A dynamic window manager for X
+# homepage	: https://dwm.suckless.org/
+# depends	: libxft libxinerama freetype2
+
+name=dwm-git
+version=6.4
+release=1
+#source="https://dl.suckless.org/dwm/dwm-$version.tar.gz"
+
+_portdir=$PWD
+
+build() {
+	git clone --depth=1 https://git.suckless.org/dwm $name-$version
+
+	cd $name-$version
+
+	# without Xinerama
+#	sed -i '/XINERAMA*/s/^/#/g' config.mk
+	
+	# config
+	if [ -f $_portdir/config.h ]; then
+		cp $_portdir/config.h .
+	fi
+
+	# patches
+	for p in $_portdir/*.patch $_portdir/*.diff; do
+		[ -f $p ] || continue
+		patch -Np1 -i $p
+	done
+
+	make PREFIX=/usr
+	make PREFIX=/usr DESTDIR=$PKG install
+}

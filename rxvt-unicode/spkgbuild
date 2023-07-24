@@ -1,0 +1,53 @@
+# description	: An X Window System terminal emulator which includes support for XFT and Unicode
+# depends	: libx11 libxt libptytty
+
+name=rxvt-unicode
+version=9.31
+release=2
+source="http://dist.schmorp.de/$name/Attic/$name-$version.tar.bz2
+	gentables.patch  
+	rxvt-unicode-kerning.patch
+	URxvt"
+
+build() {
+	cd $name-$version
+
+	for i in $SRC/*.patch ; do
+	    patch -Np1 -i $i
+	done
+
+  	./configure \
+		--prefix=/usr \
+		--disable-everything \
+		--enable-256-color \
+		--enable-perl \
+		--enable-font-styles \
+		--enable-mousewheel \
+		--enable-xim \
+		--with-terminfo=/usr/share/terminfo \
+		--with-term=rxvt-unicode-256color \
+		--enable-xft \
+		--without-codesets
+	make
+	mkdir -p $PKG/usr/share/terminfo
+	TERMINFO=$PKG/usr/share/terminfo make DESTDIR=$PKG install
+
+	install -Dm 644 $SRC/URxvt $PKG/etc/X11/app-defaults/URxvt
+	install -d $PKG/usr/share/applications
+
+cat > $PKG/usr/share/applications/urxvt.desktop << "EOF"
+[Desktop Entry]
+Encoding=UTF-8
+Name=Rxvt-Unicode Terminal
+Comment=Use the command line
+GenericName=Terminal
+Exec=urxvt
+Terminal=false
+Type=Application
+Icon=utilities-terminal
+Categories=GTK;Utility;TerminalEmulator;
+#StartupNotify=true
+Keywords=console;command line;execute;
+EOF
+}
+

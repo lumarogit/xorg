@@ -1,0 +1,28 @@
+# description	: suckless status monitor for window managers that use WM_NAME or stdin to fill the status bar
+# homepage	: https://tools.suckless.org/slstatus/
+# depends	: libx11
+
+name=slstatus
+version=20221229
+release=99
+#_commit=84a2f117a32f0796045941260cdc4b69852b41e0
+#source="$name-$version.tar.gz::https://github.com/drkhsh/slstatus/archive/$_commit.tar.gz"
+
+_portdir=$PWD
+
+build() {
+	git clone https://github.com/drkhsh/slstatus.git $name-$release
+
+	cd $name-$release
+
+	if [ -f $_portdir/config-$(hostname).h ]; then
+		cp $_portdir/config-$(hostname).h config.h
+	fi
+
+	for p in $_portdir/*.patch $_portdir/*.diff; do
+		[ -f $p ] || continue
+		patch -Np1 -i $p
+	done
+
+	DESTDIR=$PKG make PREFIX=/usr install
+}

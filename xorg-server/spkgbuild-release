@@ -1,0 +1,43 @@
+# description	: The core of the X Window system
+# depends	: pixman libdrm libx11 libglvnd libxkbfile libxfont2 mesa libepoxy libxdmcp eudev xkeyboard-config libxcvt libtirpc
+
+name=xorg-server
+version=21.1.4
+release=1
+source="http://ftp.x.org/pub/individual/xserver/$name-$version.tar.xz"
+
+build() {
+
+	venom-meson $name-$version xserver-master \
+		-D agp=false \
+		-D devel-docs=false \
+		-D docs=false \
+		-D docs-pdf=false \
+		-D dri1=false \
+		-D dri2=true \
+		-D dri3=true \
+		-D glamor=true \
+		-D hal=false \
+		-D ipv6=false \
+		-D linux_acpi=false \
+		-D linux_apm=false \
+		-D screensaver=false \
+		-D secure-rpc=false \
+		-D suid_wrapper=true \
+		-D systemd_logind=false \
+		-D xephyr=false \
+		-D xinerama=false \
+		-D xkb_dir=/usr/share/X11/xkb \
+		-D xkb_output_dir=/var/lib/xkb \
+		-D xnest=false \
+		-D xorg=true \
+		-D xquartz=false \
+		-D xselinux=false \
+		-D xvfb=false \
+		-D xwin=false
+	meson compile -C xserver-master
+	DESTDIR=$PKG meson install -C xserver-master
+
+	install -m 755 -d $PKG/etc/X11/xorg.conf.d
+	echo "needs_root_rights = yes" >> $PKG/etc/X11/Xwrapper.config
+}
